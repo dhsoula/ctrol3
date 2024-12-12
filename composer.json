@@ -1,0 +1,15 @@
+{
+    "name": "admin/my-php-project",
+    "description": "prj",
+    "type": "project",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Admin\\MyPhpProject\\": "src/"
+        }
+    },
+    "minimum-stability": "stable",
+    "require-dev": {
+        "phpunit/phpunit": "^11.5"
+    }
+}
