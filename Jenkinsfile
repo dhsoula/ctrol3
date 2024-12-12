@@ -3,7 +3,7 @@ pipeline {
 
     tools {
         // Définir l'outil sonar-scanner que vous avez configuré dans Jenkins
-        sonarScanner 'SonarQubeScanner'  // Assurez-vous que le nom de l'outil correspond à celui configuré dans Jenkins
+        SonarQube Scanner 'sonar-scanner'  // Assurez-vous que le nom de l'outil correspond à celui configuré dans Jenkins
     }
 
     stages {
