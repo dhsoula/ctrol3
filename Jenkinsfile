@@ -1,13 +1,13 @@
 pipeline {
     agent any
-    
+
     environment {
-        SONARQUBE_URL = 'http://localhost:9000' // Set your SonarQube URL
-        SONAR_TOKEN = credentials('sonartk') // Set your SonarQube token as Jenkins credentials
+        // Define necessary environment variables
+        SONAR_TOKEN = credentials('sonar-token')
     }
 
     stages {
-        stage('Checkout SCM') {
+        stage('Declarative: Checkout SCM') {
             steps {
                 checkout scm
             }
@@ -16,7 +16,7 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 script {
-                    // Install Composer dependencies
+                    // Install the necessary dependencies using Composer
                     sh 'composer install --no-interaction --prefer-dist'
                 }
             }
@@ -25,7 +25,7 @@ pipeline {
         stage('Run Tests') {
             steps {
                 script {
-                    // Run PHPUnit tests
+                    // Make PHPUnit executable and run the tests
                     sh 'chmod +x vendor/bin/phpunit'
                     sh 'vendor/bin/phpunit --configuration phpunit.xml'
                 }
@@ -35,30 +35,29 @@ pipeline {
         stage('Setup Sonar User and Group') {
             steps {
                 script {
-                    // Create the sonar user and group if they don't exist (no sudo required)
-                    sh '''
-                    if ! getent group sonar > /dev/null; then
-                        groupadd sonar  # Add sonar group
-                    fi
-                    if ! id -u sonar > /dev/null 2>&1; then
-                        useradd -r -m -g sonar sonar  # Add sonar user
-                    fi
-                    '''
+                    // Check if the sonar group exists
+                    def groupExists = sh(script: "getent group sonar", returnStatus: true) == 0
+                    if (!groupExists) {
+                        echo "Group 'sonar' does not exist, skipping creation."
+                    }
+
+                    // Check if the sonar user exists
+                    def userExists = sh(script: "id -u sonar", returnStatus: true) == 0
+                    if (!userExists) {
+                        echo "User 'sonar' does not exist, skipping creation."
+                    }
                 }
             }
         }
 
         stage('SonarQube Analysis') {
+            when {
+                expression { return currentBuild.result == null || currentBuild.result == 'SUCCESS' }
+            }
             steps {
                 script {
-                    // Run SonarQube analysis
-                    sh '''
-                    sonar-scanner \
-                        -Dsonar.projectKey=your_project_key \
-                        -Dsonar.sources=. \
-                        -Dsonar.host.url=${SONARQUBE_URL} \
-                        -Dsonar.login=${SONAR_TOKEN}
-                    '''
+                    // Run the SonarQube analysis here
+                    sh 'sonar-scanner'
                 }
             }
         }
@@ -66,7 +65,19 @@ pipeline {
         stage('Post Actions') {
             steps {
                 script {
-                    echo 'Pipeline completed.'
+                    // Post-action scripts can go here, for example notifications
+                    echo "Pipeline completed."
+                }
+            }
+        }
+
+        stage('Declarative: Post Actions') {
+            steps {
+                script {
+                    // If pipeline fails, print a failure message
+                    if (currentBuild.result == 'FAILURE') {
+                        echo "Pipeline failed."
+                    }
                 }
             }
         }
@@ -74,7 +85,11 @@ pipeline {
 
     post {
         failure {
-            echo 'Pipeline failed.'
+            echo "Pipeline failed with status: ${currentBuild.result}"
+        }
+
+        success {
+            echo "Pipeline succeeded."
         }
     }
 }
