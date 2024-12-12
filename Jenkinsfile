@@ -2,63 +2,54 @@ pipeline {
     agent any
 
     environment {
-        SONAR_TOKEN = credentials('sonartk')  // SonarQube token
-        SONAR_HOST_URL = 'http://localhost:9000'  // SonarQube server URL
-        SONAR_SCANNER_PATH = 'sonar-scanner-6.2.1.4610-windows-x64/bin/sonar-scanner.bat'  // Relative path to Sonar Scanner in the repo
+        SONAR_TOKEN = credentials('sonartk') // Replace with your SonarQube token credential ID
     }
 
     stages {
         stage('Checkout SCM') {
             steps {
-                checkout scm  // Checkout the source code from SCM
+                checkout scm
             }
         }
 
         stage('Install Dependencies') {
             steps {
-                script {
-                    if (isUnix()) {
-                        sh 'composer install --no-interaction --prefer-dist'  // For Unix-based systems
-                    } else {
-                        bat 'composer install --no-interaction --prefer-dist'  // For Windows systems
-                    }
-                }
+                sh 'composer install --no-interaction --prefer-dist'
             }
         }
 
         stage('Run Tests') {
             steps {
-                script {
-                    if (isUnix()) {
-                        sh 'chmod +x vendor/bin/phpunit'  // Make the PHPUnit script executable
-                    }
-                    sh 'vendor/bin/phpunit --configuration phpunit.xml'  // Run PHPUnit tests
-                }
+                sh '''
+                    chmod +x vendor/bin/phpunit
+                    vendor/bin/phpunit --configuration phpunit.xml
+                '''
             }
         }
 
         stage('SonarQube Analysis') {
             steps {
-                script {
-                    // Adjust path for Windows
-                    bat """
-                        ${SONAR_SCANNER_PATH} ^
-                            -Dsonar.projectKey=tp ^
-                            -Dsonar.sources=src ^
-                            -Dsonar.host.url=${SONAR_HOST_URL} ^
-                            -Dsonar.login=${SONAR_TOKEN}
-                    """
-                }
+                // Ensure the script runs for Unix systems.
+                sh '''
+                    sonar-scanner \
+                    -Dsonar.projectKey=your_project_key \
+                    -Dsonar.sources=. \
+                    -Dsonar.host.url=http:http://localhost:9000/ \
+                    -Dsonar.login=$SONAR_TOKEN
+                '''
             }
         }
     }
 
     post {
+        always {
+            echo 'Pipeline completed.'
+        }
         success {
-            echo 'Pipeline completed successfully.'  // Display success message
+            echo 'Pipeline executed successfully.'
         }
         failure {
-            echo 'Pipeline failed.'  // Display failure message
+            echo 'Pipeline failed.'
         }
     }
 }
