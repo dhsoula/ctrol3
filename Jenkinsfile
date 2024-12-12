@@ -59,11 +59,16 @@ pipeline {
                         '''
                     } else {
                         bat '''
-                            C:\\path\\to\\sonar-scanner-6.2.1.4610-windows-x64\\bin\\sonar-scanner-debug.bat ^
-                            -Dsonar.projectKey=tp ^
-                            -Dsonar.sources=. ^
-                            -Dsonar.host.url=http://localhost:9000 ^
-                            -Dsonar.login=%SONAR_TOKEN%
+                            IF EXIST "C:\\path\\to\\sonar-scanner-6.2.1.4610-windows-x64\\bin\\sonar-scanner-debug.bat" (
+                                echo "SonarQube scanner exists."
+                                C:\\path\\to\\sonar-scanner-6.2.1.4610-windows-x64\\bin\\sonar-scanner-debug.bat ^
+                                -Dsonar.projectKey=tp ^
+                                -Dsonar.sources=. ^
+                                -Dsonar.host.url=http://localhost:9000 ^
+                                -Dsonar.login=%SONAR_TOKEN%
+                            ) ELSE (
+                                echo "SonarQube scanner does not exist."
+                            )
                         '''
                     }
                 }
