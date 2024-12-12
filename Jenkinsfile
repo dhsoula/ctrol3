@@ -1,3 +1,5 @@
+
+
 pipeline {
     agent any
 
@@ -18,25 +20,33 @@ pipeline {
 
         stage('Run Tests') {
             steps {
-                // Run PHPUnit tests (no chmod needed on Windows)
+                // Run PHPUnit tests
                 bat 'vendor\\bin\\phpunit --configuration phpunit.xml'
             }
         }
 
         stage('SonarQube Analysis') {
             steps {
-                script {
-                    // Run SonarQube analysis
+                withSonarQubeEnv('mysonarqube') { // Utilise le serveur SonarQube configuré
                     bat """
                     C:\\sonar-scanner-6.2.1.4610-windows-x64\\bin\\sonar-scanner.bat ^
-                    -Dsonar.projectKey=myphp ^
+                    -Dsonar.projectKey=tp ^
                     -Dsonar.sources=./ ^
                     -Dsonar.host.url=http://localhost:9000 ^
-                    -Dsonar.login=sqp_7d10091a032da7d22b4973fc23adea79fd55ac3b
+                    -Dsonar.login=sonartk
                     """
+                }
+            }
+        }
+
+        stage('Quality Gate') {
+            steps {
+                script {
+                    timeout(time: 1, unit: 'MINUTES') {
+                        waitForQualityGate abortPipeline: true
+                    }
                 }
             }
         }
     }
 }
-
