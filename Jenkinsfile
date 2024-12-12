@@ -14,29 +14,52 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
-                sh 'composer install --no-interaction --prefer-dist'
+                script {
+                    if (isUnix()) {
+                        sh 'composer install --no-interaction --prefer-dist'
+                    } else {
+                        bat 'composer install --no-interaction --prefer-dist'
+                    }
+                }
             }
         }
 
         stage('Run Tests') {
             steps {
-                sh '''
-                    chmod +x vendor/bin/phpunit
-                    vendor/bin/phpunit --configuration phpunit.xml
-                '''
+                script {
+                    if (isUnix()) {
+                        sh '''
+                            chmod +x vendor/bin/phpunit
+                            vendor/bin/phpunit --configuration phpunit.xml
+                        '''
+                    } else {
+                        bat 'vendor\\bin\\phpunit --configuration phpunit.xml'
+                    }
+                }
             }
         }
 
         stage('SonarQube Analysis') {
             steps {
-                // Ensure the script runs for Unix systems.
-                sh '''
-                    sonar-scanner \
-                    -Dsonar.projectKey=your_project_key \
-                    -Dsonar.sources=. \
-                    -Dsonar.host.url=http:http://localhost:9000/ \
-                    -Dsonar.login=$SONAR_TOKEN
-                '''
+                script {
+                    if (isUnix()) {
+                        sh '''
+                            /path/to/sonar-scanner-6.2.1.4610-linux-x64/bin/sonar-scanner \
+                            -Dsonar.projectKey=your_project_key \
+                            -Dsonar.sources=. \
+                            -Dsonar.host.url=http://localhost:9000/ \
+                            -Dsonar.login=$SONAR_TOKEN
+                        '''
+                    } else {
+                        bat '''
+                            C:\\path\\to\\sonar-scanner-6.2.1.4610-windows-x64\\bin\\sonar-scanner-debug.bat ^
+                            -Dsonar.projectKey=your_project_key ^
+                            -Dsonar.sources=. ^
+                            -Dsonar.host.url=http://localhost:9000 ^
+                            -Dsonar.login=%SONAR_TOKEN%
+                        '''
+                    }
+                }
             }
         }
     }
