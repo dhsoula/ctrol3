@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         // Define necessary environment variables
-        SONAR_TOKEN = credentials('sonar-token')
+        SONAR_TOKEN = credentials('sonartk')
     }
 
     stages {
