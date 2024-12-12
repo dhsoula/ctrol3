@@ -1,11 +1,6 @@
 pipeline {
     agent any
 
-    tools {
-        // Déclarez le SonarQube Scanner avec le nom configuré dans Jenkins
-        sonarQube 'SonarScanner'  // Assurez-vous que le nom correspond à celui configuré dans l'image
-    }
-
     stages {
         stage('Checkout SCM') {
             steps {
@@ -32,13 +27,14 @@ pipeline {
 
         stage('SonarQube Analysis') {
             steps {
-                withSonarQubeEnv('MySonarQubeServer') { // Assurez-vous que ce nom est celui de votre serveur SonarQube configuré
-                    // Exécutez l'analyse avec le scanner SonarQube
-                    sh '''sonar-scanner \
+                withSonarQubeEnv('MySonarQubeServer') { // Remplacez 'MySonarQubeServer' par le nom exact de votre serveur SonarQube configuré
+                    sh '''
+                    sonar-scanner \
                         -Dsonar.projectKey=tp \
                         -Dsonar.sources=./ \
                         -Dsonar.host.url=http://localhost:9000 \
-                        -Dsonar.login=sonartk'''
+                        -Dsonar.login=sonartk
+                    '''
                 }
             }
         }
@@ -46,7 +42,6 @@ pipeline {
         stage('Quality Gate') {
             steps {
                 script {
-                    // Vérifiez la Quality Gate avec un délai maximum
                     timeout(time: 1, unit: 'MINUTES') {
                         waitForQualityGate abortPipeline: true
                     }
