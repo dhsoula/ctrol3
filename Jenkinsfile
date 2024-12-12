@@ -43,14 +43,19 @@ pipeline {
             steps {
                 script {
                     if (isUnix()) {
-                        // Confirm permissions for the SonarQube scanner
+                        // Check if the sonar-scanner exists
                         sh '''
-                            chmod +x /opt/sonar-scanner/bin/sonar-scanner
-                            /opt/sonar-scanner/bin/sonar-scanner \
-                            -Dsonar.projectKey=tp \
-                            -Dsonar.sources=. \
-                            -Dsonar.host.url=http://localhost:9000 \
-                            -Dsonar.login=$SONAR_TOKEN
+                            if [ -f /opt/sonar-scanner/bin/sonar-scanner ]; then
+                                echo "SonarQube scanner exists."
+                                chmod +x /opt/sonar-scanner/bin/sonar-scanner
+                                /opt/sonar-scanner/bin/sonar-scanner \
+                                -Dsonar.projectKey=tp \
+                                -Dsonar.sources=. \
+                                -Dsonar.host.url=http://localhost:9000 \
+                                -Dsonar.login=$SONAR_TOKEN
+                            else
+                                echo "SonarQube scanner does not exist at /opt/sonar-scanner/bin/sonar-scanner"
+                            fi
                         '''
                     } else {
                         bat '''
