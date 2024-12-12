@@ -12,13 +12,17 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 // Run Composer to install dependencies
+                
                 sh 'composer install --no-interaction --prefer-dist'
             }
         }
 
         stage('Run Tests') {
             steps {
-                // Run PHPUnit tests
+                // Run PHPUnit tests 
+                sh 'chmod +x vendor/bin/phpunit'
+
+                
                 sh 'vendor/bin/phpunit --configuration phpunit.xml'
             }
         }
