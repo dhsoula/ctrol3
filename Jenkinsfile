@@ -42,7 +42,17 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 script {
-                   
+                    if (isUnix()) {
+                        // Confirm permissions for the SonarQube scanner
+                        sh '''
+                            chmod +x /opt/sonar-scanner/bin/sonar-scanner
+                            /opt/sonar-scanner/bin/sonar-scanner \
+                            -Dsonar.projectKey=tp \
+                            -Dsonar.sources=. \
+                            -Dsonar.host.url=http://localhost:9000 \
+                            -Dsonar.login=$SONAR_TOKEN
+                        '''
+                    } else {
                         bat '''
                             C:\\path\\to\\sonar-scanner-6.2.1.4610-windows-x64\\bin\\sonar-scanner-debug.bat ^
                             -Dsonar.projectKey=tp ^
@@ -53,7 +63,8 @@ pipeline {
                     }
                 }
             }
-      
+        }
+    }
 
     post {
         always {
