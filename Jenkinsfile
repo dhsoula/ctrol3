@@ -29,9 +29,9 @@ pipeline {
 
         stage('SonarQube Analysis') {
             steps {
-                withSonarQubeEnv('mysonarqube') { // Utilise le serveur SonarQube configuré
+                withSonarQubeEnv('MySonarQubeServer') { // Utilise le serveur SonarQube configuré
                     sh '''
-                    /path/to/sonar-scanner/bin/sonar-scanner \
+                    C:\Users\ADMIN\OneDrive\Bureau\AGIL\jenkins_home\plugins\sonar-scanner\bin
                     -Dsonar.projectKey=tp \
                     -Dsonar.sources=./ \
                     -Dsonar.host.url=http://localhost:9000 \
