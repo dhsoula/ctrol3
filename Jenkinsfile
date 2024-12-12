@@ -2,8 +2,8 @@ pipeline {
     agent any
 
     environment {
-        // Define necessary environment variables
-        SONAR_TOKEN = credentials('sonartk')
+        SONAR_TOKEN = credentials('sonar-token')
+        SONAR_SCANNER_PATH = 'C:/Users/ADMIN/OneDrive/Bureau/AGIL/jenkins_home/workspace/ctr/sonar-scanner-6.2.1.4610-windows-x64/bin/sonar-scanner.bat' // Adjust path accordingly
     }
 
     stages {
@@ -16,7 +16,6 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 script {
-                    // Install the necessary dependencies using Composer
                     sh 'composer install --no-interaction --prefer-dist'
                 }
             }
@@ -25,7 +24,6 @@ pipeline {
         stage('Run Tests') {
             steps {
                 script {
-                    // Make PHPUnit executable and run the tests
                     sh 'chmod +x vendor/bin/phpunit'
                     sh 'vendor/bin/phpunit --configuration phpunit.xml'
                 }
@@ -35,13 +33,11 @@ pipeline {
         stage('Setup Sonar User and Group') {
             steps {
                 script {
-                    // Check if the sonar group exists
                     def groupExists = sh(script: "getent group sonar", returnStatus: true) == 0
                     if (!groupExists) {
                         echo "Group 'sonar' does not exist, skipping creation."
                     }
 
-                    // Check if the sonar user exists
                     def userExists = sh(script: "id -u sonar", returnStatus: true) == 0
                     if (!userExists) {
                         echo "User 'sonar' does not exist, skipping creation."
@@ -56,8 +52,9 @@ pipeline {
             }
             steps {
                 script {
-                    // Run the SonarQube analysis here
-                    sh 'sonar-scanner'
+                    // Run SonarQube analysis using the specified path
+                    echo "Running SonarQube Analysis..."
+                    bat "\"${env.SONAR_SCANNER_PATH}\""
                 }
             }
         }
@@ -65,7 +62,6 @@ pipeline {
         stage('Post Actions') {
             steps {
                 script {
-                    // Post-action scripts can go here, for example notifications
                     echo "Pipeline completed."
                 }
             }
@@ -74,7 +70,6 @@ pipeline {
         stage('Declarative: Post Actions') {
             steps {
                 script {
-                    // If pipeline fails, print a failure message
                     if (currentBuild.result == 'FAILURE') {
                         echo "Pipeline failed."
                     }
