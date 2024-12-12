@@ -4,7 +4,7 @@ pipeline {
     environment {
         SONAR_TOKEN = credentials('sonartk')  // SonarQube token
         SONAR_HOST_URL = 'http://localhost:9000'  // SonarQube server URL
-        SONAR_SCANNER_PATH = '/path/to/sonar-scanner/bin/sonar-scanner'  // Direct path to Sonar Scanner
+        SONAR_SCANNER_PATH = 'sonar-scanner-6.2.1.4610-windows-x64/bin/sonar-scanner.bat'  // Relative path to Sonar Scanner in the repo
     }
 
     stages {
@@ -40,11 +40,12 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 script {
-                    sh """
-                        ${SONAR_SCANNER_PATH} \
-                            -Dsonar.projectKey=tp \
-                            -Dsonar.sources=src \
-                            -Dsonar.host.url=${SONAR_HOST_URL} \
+                    // Adjust path for Windows
+                    bat """
+                        ${SONAR_SCANNER_PATH} ^
+                            -Dsonar.projectKey=tp ^
+                            -Dsonar.sources=src ^
+                            -Dsonar.host.url=${SONAR_HOST_URL} ^
                             -Dsonar.login=${SONAR_TOKEN}
                     """
                 }
@@ -61,5 +62,3 @@ pipeline {
         }
     }
 }
-
-
