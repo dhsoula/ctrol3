@@ -2,7 +2,8 @@ pipeline {
     agent any
 
     tools {
-        sonarScanner 'sonarScanner'  // Assurez-vous que le nom ici correspond à l'outil configuré dans Jenkins
+        // Définir l'outil sonar-scanner que vous avez configuré dans Jenkins
+        sonarScanner 'SonarQubeScanner'  // Assurez-vous que le nom de l'outil correspond à celui configuré dans Jenkins
     }
 
     stages {
@@ -32,8 +33,7 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('MySonarQubeServer') { // Utilise le serveur SonarQube configuré
-                    // Exécute l'analyse SonarQube avec l'outil sonarScanner installé
-                    tool name: 'sonarScanner', type: 'SonarQubeScanner'
+                    // Exécute l'analyse SonarQube avec l'outil SonarQube Scanner
                     sh '''sonar-scanner \
                         -Dsonar.projectKey=tp \
                         -Dsonar.sources=./ \
@@ -55,3 +55,4 @@ pipeline {
         }
     }
 }
+
