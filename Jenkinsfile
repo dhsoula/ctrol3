@@ -4,25 +4,23 @@ pipeline {
     stages {
         stage('Checkout SCM') {
             steps {
-                // Checkout the source code from SCM
+                // Récupère le code source depuis le SCM
                 checkout scm
             }
         }
 
         stage('Install Dependencies') {
             steps {
-                // Run Composer to install dependencies
-                
+                // Installe les dépendances avec Composer
                 sh 'composer install --no-interaction --prefer-dist'
             }
         }
 
         stage('Run Tests') {
             steps {
-                // Run PHPUnit tests 
+                // Rend le script PHPUnit exécutable
                 sh 'chmod +x vendor/bin/phpunit'
-
-                
+                // Exécute les tests PHPUnit
                 sh 'vendor/bin/phpunit --configuration phpunit.xml'
             }
         }
@@ -30,13 +28,8 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('MySonarQubeServer') { // Utilise le serveur SonarQube configuré
-                    sh '''
-                    C:\Users\ADMIN\OneDrive\Bureau\AGIL\jenkins_home\plugins\sonar-scanner\bin
-                    -Dsonar.projectKey=tp \
-                    -Dsonar.sources=./ \
-                    -Dsonar.host.url=http://localhost:9000 \
-                    -Dsonar.login=sonartk
-                    '''
+                    // Exécute l'analyse SonarQube avec le scanner situé dans le chemin spécifié
+                    bat 'C:\\Users\\ADMIN\\OneDrive\\Bureau\\AGIL\\jenkins_home\\plugins\\sonar-scanner\\bin\\sonar-scanner.bat -Dsonar.projectKey=tp -Dsonar.sources=./ -Dsonar.host.url=http://localhost:9000 -Dsonar.login=sonartk'
                 }
             }
         }
@@ -44,6 +37,7 @@ pipeline {
         stage('Quality Gate') {
             steps {
                 script {
+                    // Vérifie le statut de la Quality Gate dans un délai d'une minute
                     timeout(time: 1, unit: 'MINUTES') {
                         waitForQualityGate abortPipeline: true
                     }
@@ -52,4 +46,5 @@ pipeline {
         }
     }
 }
+
 
