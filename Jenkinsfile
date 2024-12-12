@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        SONAR_TOKEN = credentials('sonar-token')
+        SONAR_TOKEN = credentials('sonartk')
         SONAR_SCANNER_PATH = 'C:/Users/ADMIN/OneDrive/Bureau/AGIL/jenkins_home/workspace/ctr/sonar-scanner-6.2.1.4610-windows-x64/bin/sonar-scanner.bat' // Adjust path accordingly
     }
 
