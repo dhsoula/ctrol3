@@ -12,46 +12,27 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 // Run Composer to install dependencies
-                script {
-                    def process = ['composer', 'install', '--no-interaction', '--prefer-dist'].execute()
-                    process.waitFor()
-                    if (process.exitValue() != 0) {
-                        error "Composer install failed with error: ${process.err.text}"
-                    }
-                }
+                sh 'composer install --no-interaction --prefer-dist'
             }
         }
 
         stage('Run Tests') {
             steps {
                 // Run PHPUnit tests
-                script {
-                    def process = ['vendor\\bin\\phpunit', '--configuration', 'phpunit.xml'].execute()
-                    process.waitFor()
-                    if (process.exitValue() != 0) {
-                        error "PHPUnit tests failed with error: ${process.err.text}"
-                    }
-                }
+                sh 'vendor/bin/phpunit --configuration phpunit.xml'
             }
         }
 
         stage('SonarQube Analysis') {
             steps {
-                withSonarQubeEnv('mysonarqube') { // Use the configured SonarQube server
-                    script {
-                        def sonarCommand = [
-                            'C:\\sonar-scanner-6.2.1.4610-windows-x64\\bin\\sonar-scanner.bat',
-                            '-Dsonar.projectKey=tp',
-                            '-Dsonar.sources=./',
-                            '-Dsonar.host.url=http://localhost:9000',
-                            '-Dsonar.login=sonartk'
-                        ]
-                        def process = sonarCommand.execute()
-                        process.waitFor()
-                        if (process.exitValue() != 0) {
-                            error "SonarQube analysis failed with error: ${process.err.text}"
-                        }
-                    }
+                withSonarQubeEnv('mysonarqube') { // Utilise le serveur SonarQube configuré
+                    sh '''
+                    /path/to/sonar-scanner/bin/sonar-scanner \
+                    -Dsonar.projectKey=tp \
+                    -Dsonar.sources=./ \
+                    -Dsonar.host.url=http://localhost:9000 \
+                    -Dsonar.login=sonartk
+                    '''
                 }
             }
         }
@@ -67,3 +48,4 @@ pipeline {
         }
     }
 }
+
