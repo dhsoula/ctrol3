@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    tools {
+        sonarScanner 'sonarScanner'  // Assurez-vous que le nom ici correspond à l'outil configuré dans Jenkins
+    }
+
     stages {
         stage('Checkout SCM') {
             steps {
@@ -28,8 +32,13 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('MySonarQubeServer') { // Utilise le serveur SonarQube configuré
-                    // Exécute l'analyse SonarQube avec le scanner situé dans le chemin spécifié
-                    bat 'C:\\Users\\ADMIN\\OneDrive\\Bureau\\AGIL\\jenkins_home\\plugins\\sonar-scanner\\bin\\sonar-scanner.bat -Dsonar.projectKey=tp -Dsonar.sources=./ -Dsonar.host.url=http://localhost:9000 -Dsonar.login=sonartk'
+                    // Exécute l'analyse SonarQube avec l'outil sonarScanner installé
+                    tool name: 'sonarScanner', type: 'SonarQubeScanner'
+                    sh '''sonar-scanner \
+                        -Dsonar.projectKey=tp \
+                        -Dsonar.sources=./ \
+                        -Dsonar.host.url=http://localhost:9000 \
+                        -Dsonar.login=sonartk'''
                 }
             }
         }
@@ -46,5 +55,3 @@ pipeline {
         }
     }
 }
-
-
