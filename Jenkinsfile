@@ -3,6 +3,7 @@ pipeline {
 
     environment {
         SONAR_TOKEN = credentials('sonartk') // Replace with your SonarQube token credential ID
+        SONAR_SCANNER_HOME = '/opt/sonar-scanner' // Set the SonarScanner home directory
     }
 
     stages {
@@ -39,36 +40,51 @@ pipeline {
             }
         }
 
+        stage('Setup Sonar User and Group') {
+            steps {
+                script {
+                    if (isUnix()) {
+                        sh '''
+                            # Add the sonar group if it doesn't exist
+                            if ! getent group sonar > /dev/null; then
+                                sudo addgroup sonar
+                                echo "Group 'sonar' created."
+                            else
+                                echo "Group 'sonar' already exists."
+                            fi
+
+                            # Add the sonar user if it doesn't exist
+                            if ! id -u sonar > /dev/null 2>&1; then
+                                sudo useradd -s $(which bash) -d ${SONAR_SCANNER_HOME} -g sonar sonar
+                                echo "User 'sonar' created."
+                            else
+                                echo "User 'sonar' already exists."
+                            fi
+
+                            # Set permissions for the SonarScanner directory
+                            sudo chown -R sonar:sonar ${SONAR_SCANNER_HOME}
+                            sudo chmod -R 755 ${SONAR_SCANNER_HOME}
+                        '''
+                    }
+                }
+            }
+        }
+
         stage('SonarQube Analysis') {
             steps {
                 script {
                     if (isUnix()) {
-                        // Check if the sonar-scanner exists
                         sh '''
-                            if [ -f /opt/sonar-scanner/bin/sonar-scanner ]; then
-                                echo "SonarQube scanner exists."
-                                chmod +x /opt/sonar-scanner/bin/sonar-scanner
-                                /opt/sonar-scanner/bin/sonar-scanner \
-                                -Dsonar.projectKey=tp \
-                                -Dsonar.sources=. \
-                                -Dsonar.host.url=http://localhost:9000 \
-                                -Dsonar.login=$SONAR_TOKEN
-                            else
-                                echo "SonarQube scanner does not exist at /opt/sonar-scanner/bin/sonar-scanner"
-                            fi
+                            # Run SonarScanner as the 'sonar' user
+                            sudo -u sonar ${SONAR_SCANNER_HOME}/bin/sonar-scanner \
+                            -Dsonar.projectKey=tp \
+                            -Dsonar.sources=. \
+                            -Dsonar.host.url=http://localhost:9000 \
+                            -Dsonar.login=$SONAR_TOKEN
                         '''
                     } else {
                         bat '''
-                            IF EXIST "C:\\path\\to\\sonar-scanner-6.2.1.4610-windows-x64\\bin\\sonar-scanner-debug.bat" (
-                                echo "SonarQube scanner exists."
-                                C:\\path\\to\\sonar-scanner-6.2.1.4610-windows-x64\\bin\\sonar-scanner-debug.bat ^
-                                -Dsonar.projectKey=tp ^
-                                -Dsonar.sources=. ^
-                                -Dsonar.host.url=http://localhost:9000 ^
-                                -Dsonar.login=%SONAR_TOKEN%
-                            ) ELSE (
-                                echo "SonarQube scanner does not exist."
-                            )
+                            echo "Windows environment is not yet configured for SonarScanner execution."
                         '''
                     }
                 }
