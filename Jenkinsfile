@@ -52,9 +52,14 @@ pipeline {
             }
             steps {
                 script {
-                    // Run SonarQube analysis using the specified path
                     echo "Running SonarQube Analysis..."
-                    bat "\"${env.SONAR_SCANNER_PATH}\""
+                    
+                    // Check the platform (Unix or Windows) and run the appropriate command
+                    if (isUnix()) {
+                        sh "${env.SONAR_SCANNER_PATH}"
+                    } else {
+                        bat "\"${env.SONAR_SCANNER_PATH}\""
+                    }
                 }
             }
         }
