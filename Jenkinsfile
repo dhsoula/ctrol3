@@ -1,5 +1,3 @@
-
-
 pipeline {
     agent any
 
@@ -14,27 +12,46 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 // Run Composer to install dependencies
-                bat 'composer install --no-interaction --prefer-dist'
+                script {
+                    def process = ['composer', 'install', '--no-interaction', '--prefer-dist'].execute()
+                    process.waitFor()
+                    if (process.exitValue() != 0) {
+                        error "Composer install failed with error: ${process.err.text}"
+                    }
+                }
             }
         }
 
         stage('Run Tests') {
             steps {
                 // Run PHPUnit tests
-                bat 'vendor\\bin\\phpunit --configuration phpunit.xml'
+                script {
+                    def process = ['vendor\\bin\\phpunit', '--configuration', 'phpunit.xml'].execute()
+                    process.waitFor()
+                    if (process.exitValue() != 0) {
+                        error "PHPUnit tests failed with error: ${process.err.text}"
+                    }
+                }
             }
         }
 
         stage('SonarQube Analysis') {
             steps {
-                withSonarQubeEnv('mysonarqube') { // Utilise le serveur SonarQube configuré
-                    bat """
-                    C:\\sonar-scanner-6.2.1.4610-windows-x64\\bin\\sonar-scanner.bat ^
-                    -Dsonar.projectKey=tp ^
-                    -Dsonar.sources=./ ^
-                    -Dsonar.host.url=http://localhost:9000 ^
-                    -Dsonar.login=sonartk
-                    """
+                withSonarQubeEnv('mysonarqube') { // Use the configured SonarQube server
+                    script {
+                        def sonarCommand = [
+                            'C:\\sonar-scanner-6.2.1.4610-windows-x64\\bin\\sonar-scanner.bat',
+                            '-Dsonar.projectKey=tp',
+                            '-Dsonar.sources=./',
+                            '-Dsonar.host.url=http://localhost:9000',
+                            '-Dsonar.login=sonartk'
+                        ]
+                        def process = sonarCommand.execute()
+                        process.waitFor()
+                        if (process.exitValue() != 0) {
+                            error "SonarQube analysis failed with error: ${process.err.text}"
+                        }
+                    }
                 }
             }
         }
