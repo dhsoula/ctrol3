@@ -45,7 +45,7 @@ pipeline {
                     if (isUnix()) {
                         sh '''
                             /path/to/sonar-scanner-6.2.1.4610-linux-x64/bin/sonar-scanner \
-                            -Dsonar.projectKey=your_project_key \
+                            -Dsonar.projectKey=tp\
                             -Dsonar.sources=. \
                             -Dsonar.host.url=http://localhost:9000/ \
                             -Dsonar.login=$SONAR_TOKEN
@@ -53,7 +53,7 @@ pipeline {
                     } else {
                         bat '''
                             C:\\path\\to\\sonar-scanner-6.2.1.4610-windows-x64\\bin\\sonar-scanner-debug.bat ^
-                            -Dsonar.projectKey=your_project_key ^
+                            -Dsonar.projectKey=tp ^
                             -Dsonar.sources=. ^
                             -Dsonar.host.url=http://localhost:9000 ^
                             -Dsonar.login=%SONAR_TOKEN%
