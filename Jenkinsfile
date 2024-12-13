@@ -1,6 +1,12 @@
 pipeline {
     agent any
 
+    environment {
+        SONARQUBE_HOST_URL = 'http://localhost:9000'
+        SONARQUBE_PROJECT_KEY = 'tp'
+        SONARQUBE_LOGIN = credentials('sonar_token') // Store token as Jenkins credential
+    }
+
     stages {
         stage('Checkout SCM') {
             steps {
@@ -27,14 +33,18 @@ pipeline {
 
         stage('SonarQube Analysis') {
             steps {
-                withSonarQubeEnv('MySonarQubeServer') { // Remplacez 'MySonarQubeServer' par le nom exact de votre serveur SonarQube configuré
-                    sh '''
-                    sonar-scanner \
-                        -Dsonar.projectKey=tp \
-                        -Dsonar.sources=./ \
-                        -Dsonar.host.url=http://localhost:9000 \
-                        -Dsonar.login=sonartk
-                    '''
+                script {
+                    // Using SonarScanner Docker container
+                    docker.image('sonarsource/sonar-scanner-cli:4.8').inside {
+                        // Run SonarQube Analysis
+                        sh '''
+                        sonar-scanner \
+                            -Dsonar.projectKey=$SONARQUBE_PROJECT_KEY \
+                            -Dsonar.sources=./ \
+                            -Dsonar.host.url=$SONARQUBE_HOST_URL \
+                            -Dsonar.login=$SONARQUBE_LOGIN
+                        '''
+                    }
                 }
             }
         }
@@ -50,4 +60,3 @@ pipeline {
         }
     }
 }
-
