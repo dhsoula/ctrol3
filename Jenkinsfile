@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    tools {
+        docker 'docker'  // Declare Docker tool
+    }
+
     environment {
         SONARQUBE_HOST_URL = 'http://localhost:9000'
         SONARQUBE_PROJECT_KEY = 'tp'
@@ -10,23 +14,19 @@ pipeline {
     stages {
         stage('Checkout SCM') {
             steps {
-                // Récupérer le code source depuis le SCM
                 checkout scm
             }
         }
 
         stage('Install Dependencies') {
             steps {
-                // Installer les dépendances avec Composer
                 sh 'composer install --no-interaction --prefer-dist'
             }
         }
 
         stage('Run Tests') {
             steps {
-                // Rendre le script PHPUnit exécutable
                 sh 'chmod +x vendor/bin/phpunit'
-                // Exécuter les tests PHPUnit
                 sh 'vendor/bin/phpunit --configuration phpunit.xml'
             }
         }
@@ -34,9 +34,7 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 script {
-                    // Using SonarScanner Docker container
                     docker.image('sonarsource/sonar-scanner-cli:4.8').inside {
-                        // Run SonarQube Analysis
                         sh '''
                         sonar-scanner \
                             -Dsonar.projectKey=$SONARQUBE_PROJECT_KEY \
@@ -51,12 +49,11 @@ pipeline {
 
         stage('Quality Gate') {
             steps {
-                script {
-                    timeout(time: 1, unit: 'MINUTES') {
-                        waitForQualityGate abortPipeline: true
-                    }
+                timeout(time: 1, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
                 }
             }
         }
     }
 }
+
