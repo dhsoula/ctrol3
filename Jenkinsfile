@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     tools {
-        docker 'docker'  // Declare Docker tool
+        dockerTool 'docker'  // Refers to the Docker tool set up in Jenkins configuration
     }
 
     environment {
@@ -56,4 +56,3 @@ pipeline {
         }
     }
 }
-
