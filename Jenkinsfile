@@ -1,36 +1,28 @@
 pipeline {
     agent any
 
-    tools {
-        // Ensure the SonarQube Scanner is installed in Jenkins
-        sonarQubeScanner 'SonarQubeScanner'  // Name of the installed SonarQube Scanner tool
-    }
-
     environment {
-        // Set environment variables for SonarQube
-        SONARQUBE_HOST_URL = 'http://localhost:9000'  // Adjust if SonarQube is running on another host
-        SONARQUBE_PROJECT_KEY = 'tp'  // Your project key in SonarQube
-        SONARQUBE_LOGIN = credentials('sonartk')  // Store token as Jenkins credential
+        // Configuration SonarQube
+        SONARQUBE_HOST_URL = 'http://localhost:9000'  // Adresse de SonarQube
+        SONARQUBE_PROJECT_KEY = 'tp'  // Clé de votre projet
+        SONARQUBE_LOGIN = credentials('sonartk')  // Jeton enregistré comme credential
     }
 
     stages {
         stage('Checkout SCM') {
             steps {
-                // Checkout the code from your SCM (e.g., Git)
                 checkout scm
             }
         }
 
         stage('Install Dependencies') {
             steps {
-                // Install project dependencies (for PHP projects in this case)
                 sh 'composer install --no-interaction --prefer-dist'
             }
         }
 
         stage('Run Tests') {
             steps {
-                // Ensure PHPUnit is executable and run tests
                 sh 'chmod +x vendor/bin/phpunit'
                 sh 'vendor/bin/phpunit --configuration phpunit.xml'
             }
@@ -39,26 +31,26 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 script {
-                    // Run the SonarScanner for code analysis
-                    sh '''
-                        sonar-scanner \
-                            -Dsonar.projectKey=$SONARQUBE_PROJECT_KEY \
-                            -Dsonar.sources=./ \
-                            -Dsonar.host.url=$SONARQUBE_HOST_URL \
-                            -Dsonar.login=$SONARQUBE_LOGIN
-                    '''
+                    withSonarQubeEnv('SonarQube') {  // Utilisation du plugin SonarQube
+                        sh '''
+                            sonar-scanner \
+                                -Dsonar.projectKey=$SONARQUBE_PROJECT_KEY \
+                                -Dsonar.sources=./ \
+                                -Dsonar.host.url=$SONARQUBE_HOST_URL \
+                                -Dsonar.login=$SONARQUBE_LOGIN
+                        '''
+                    }
                 }
             }
         }
 
         stage('Quality Gate') {
             steps {
-                // Wait for the Quality Gate status (1-minute timeout)
                 timeout(time: 1, unit: 'MINUTES') {
                     script {
-                        def qualityGate = waitForQualityGate()  // Wait for SonarQube Quality Gate status
+                        def qualityGate = waitForQualityGate()
                         if (qualityGate.status != 'OK') {
-                            error "Quality gate failed: ${qualityGate.status}"  // Fail the build if Quality Gate fails
+                            error "Quality gate failed: ${qualityGate.status}"
                         }
                     }
                 }
@@ -67,10 +59,8 @@ pipeline {
     }
 
     post {
-        // Clean up after the pipeline run
         always {
-            cleanWs()  // Clean workspace after the build
+            cleanWs()
         }
     }
 }
-
