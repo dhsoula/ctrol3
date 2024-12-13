@@ -4,7 +4,7 @@ FROM jenkins/jenkins:lts
 # Switch to root to install dependencies
 USER root
 
-# Install required tools: Docker, OpenJDK, wget, and unzip
+# Install required tools: Docker, OpenJDK, wget, unzip, curl
 RUN apt-get update && \
     apt-get install -y openjdk-17-jdk wget unzip apt-transport-https ca-certificates curl gnupg && \
     curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg && \
@@ -25,4 +25,6 @@ ENV PATH=$SONAR_SCANNER_HOME/bin:$PATH
 # Set permissions and switch back to Jenkins user
 RUN groupadd -g 999 docker && \
     usermod -aG docker jenkins
+
+# Switch to the jenkins user for security
 USER jenkins
