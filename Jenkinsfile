@@ -1,9 +1,7 @@
 pipeline {
     agent any
 
-    tools {
-        dockerTool 'docker'  // Refers to the Docker tool set up in Jenkins configuration
-    }
+   
 
     environment {
         SONARQUBE_HOST_URL = 'http://localhost:9000'
@@ -34,7 +32,7 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 script {
-                    docker.image('sonarsource/sonar-scanner-cli:4.8').inside {
+                    
                         sh '''
                         sonar-scanner \
                             -Dsonar.projectKey=$SONARQUBE_PROJECT_KEY \
