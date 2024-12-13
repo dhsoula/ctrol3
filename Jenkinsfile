@@ -1,8 +1,6 @@
 pipeline {
     agent any
 
-   
-
     environment {
         SONARQUBE_HOST_URL = 'http://localhost:9000'
         SONARQUBE_PROJECT_KEY = 'tp'
@@ -32,15 +30,13 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 script {
-                    
-                        sh '''
+                    sh '''
                         sonar-scanner \
                             -Dsonar.projectKey=$SONARQUBE_PROJECT_KEY \
                             -Dsonar.sources=./ \
                             -Dsonar.host.url=$SONARQUBE_HOST_URL \
                             -Dsonar.login=$SONARQUBE_LOGIN
-                        '''
-                    }
+                    '''
                 }
             }
         }
@@ -54,3 +50,4 @@ pipeline {
         }
     }
 }
+
